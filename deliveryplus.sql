@@ -1,5 +1,5 @@
 -- DELIVEY PLUS - ESQUEMA OFICIAL PARA POSTGRESQL / SUPABASE
--- Con marcas de idempotencia (DROP IF EXISTS, ON CONFLICT)
+-- Con marcas de idempotencia (DROP IF EXISTS)
 
 -- Habilitar extensiones necesarias si aplica
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -204,7 +204,7 @@ ON CONFLICT (usuario_id) DO NOTHING;
 
 -- EMPRENDEDORES
 INSERT INTO emprendedores (usuario_id, nombre_emprendimiento, rubro, descripcion, historia_familiar, direccion, latitud, longitud) VALUES
-(1, 'Pastas de la Nona', 'Gastronomía Artesanal', 'Pastas caseras frescas receta italiana de 1948.', 'Nuestra abuela Filomena amaba cocinar. Seguimos su legado con la misma tabla de madera.', 'Serrano 1230, Villa Crespo', -34.595600, -58.435000)
+(4, 'Pastas de la Nona', 'Gastronomía Artesanal', 'Pastas caseras frescas receta italiana de 1948.', 'Nuestra abuela Filomena amaba cocinar. Seguimos su legado con la misma tabla de madera.', 'Serrano 1230, Villa Crespo', -34.595600, -58.435000)
 ON CONFLICT (usuario_id) DO NOTHING;
 
 -- BILLETERAS
@@ -215,24 +215,20 @@ INSERT INTO billeteras (usuario_id, saldo) VALUES
 (4, 6000.00)
 ON CONFLICT (usuario_id) DO NOTHING;
 
--- TRANSACCIONES
+-- TRANSACCIONES (No conflict index - direct insert)
 INSERT INTO transacciones (usuario_id, tipo, monto, saldo_anterior, saldo_posterior, referencia) VALUES
 (2, 'ingreso_turno', 12000.00, 12000.00, 24000.00, 'turno_1'),
-(1, 'comision_plataforma', 3000.00, 2000.00, 5000.00, 'turno_1')
-ON CONFLICT DO NOTHING;
+(1, 'comision_plataforma', 3000.00, 2000.00, 5000.00, 'turno_1');
 
--- TURNOS
+-- TURNOS (No conflict index - direct insert)
 INSERT INTO turnos (comercio_id, repartidor_id, fecha, hora_inicio, hora_fin, monto_total, monto_repartidor, monto_plataforma, estado) VALUES
-(1, NULL, CURRENT_DATE, '20:00:00', '23:59:59', 15000.00, 12000.00, 3000.00, 'disponible')
-ON CONFLICT DO NOTHING;
+(1, NULL, CURRENT_DATE, '20:00:00', '23:59:59', 15000.00, 12000.00, 3000.00, 'disponible');
 
--- ENTREGAS UNICAS
+-- ENTREGAS UNICAS (No conflict index - direct insert)
 INSERT INTO entregas_unicas (emprendedor_id, repartidor_id, direccion_origen, direccion_destino, tamano_paquete, monto_total, monto_repartidor, monto_plataforma, estado) VALUES
-(1, NULL, 'Serrano 1230, Villa Crespo', 'Av. Scalabrini Ortiz 2800, Palermo', 'mediano', 3500.00, 2800.00, 700.00, 'disponible')
-ON CONFLICT DO NOTHING;
+(1, NULL, 'Serrano 1230, Villa Crespo', 'Av. Scalabrini Ortiz 2800, Palermo', 'mediano', 3500.00, 2800.00, 700.00, 'disponible');
 
--- ZONAS CALIENTES
+-- ZONAS CALIENTES (No conflict index - direct insert)
 INSERT INTO zonas_calientes (nombre_zona, latitud, longitud, radio_km, nivel_demanda) VALUES
 ('Zona Comercial Palermo', -34.591200, -58.411100, 1.80, 'alto'),
-('Área Residencial Belgrano', -34.562000, -58.456000, 2.00, 'critico')
-ON CONFLICT DO NOTHING;
+('Área Residencial Belgrano', -34.562000, -58.456000, 2.00, 'critico');
