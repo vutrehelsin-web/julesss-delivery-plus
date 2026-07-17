@@ -1,232 +1,238 @@
--- ==========================================
--- PROYECTO: DELIVERYPLUS - DATABASE SCHEMA
--- MOTOR: MariaDB / MySQL (Local)
--- ==========================================
+-- DELIVEY PLUS - ESQUEMA OFICIAL PARA POSTGRESQL / SUPABASE
+-- Con marcas de idempotencia (DROP IF EXISTS, ON CONFLICT)
 
-CREATE DATABASE IF NOT EXISTS `deliveryplus` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `deliveryplus`;
+-- Habilitar extensiones necesarias si aplica
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-SET FOREIGN_KEY_CHECKS = 0;
+-- Desactivar llaves foráneas temporalmente en Postgres
+SET session_replication_role = 'replica';
 
-DROP TABLE IF EXISTS `calificaciones`;
-DROP TABLE IF EXISTS `mensajes`;
-DROP TABLE IF EXISTS `conversaciones`;
-DROP TABLE IF EXISTS `ia_sugerencias`;
-DROP TABLE IF EXISTS `clima_registros`;
-DROP TABLE IF EXISTS `zonas_calientes`;
-DROP TABLE IF EXISTS `productos_emprendedor`;
-DROP TABLE IF EXISTS `categorias_emprendedor`;
-DROP TABLE IF EXISTS `transacciones`;
-DROP TABLE IF EXISTS `billeteras`;
-DROP TABLE IF EXISTS `entregas_unicas`;
-DROP TABLE IF EXISTS `turnos`;
-DROP TABLE IF EXISTS `emprendedores`;
-DROP TABLE IF EXISTS `comercios`;
-DROP TABLE IF EXISTS `perfil_repartidor`;
-DROP TABLE IF EXISTS `repartidores`;
-DROP TABLE IF EXISTS `usuarios`;
-DROP TABLE IF EXISTS `roles`;
+DROP TABLE IF EXISTS zonas_calientes CASCADE;
+DROP TABLE IF EXISTS productos_emprendedor CASCADE;
+DROP TABLE IF EXISTS categorias_emprendedor CASCADE;
+DROP TABLE IF EXISTS transacciones CASCADE;
+DROP TABLE IF EXISTS billeteras CASCADE;
+DROP TABLE IF EXISTS entregas_unicas CASCADE;
+DROP TABLE IF EXISTS turnos CASCADE;
+DROP TABLE IF EXISTS emprendedores CASCADE;
+DROP TABLE IF EXISTS comercios CASCADE;
+DROP TABLE IF EXISTS perfil_repartidor CASCADE;
+DROP TABLE IF EXISTS repartidores CASCADE;
+DROP TABLE IF EXISTS usuarios CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+
+-- Reactivar llaves foráneas
+SET session_replication_role = 'origin';
 
 -- 1. ROLES
-CREATE TABLE `roles` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(50) NOT NULL UNIQUE,
-  `descripcion` VARCHAR(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE roles (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  nombre VARCHAR(50) NOT NULL UNIQUE,
+  descripcion VARCHAR(255) DEFAULT NULL
+);
 
 -- 2. USUARIOS
-CREATE TABLE `usuarios` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `email` VARCHAR(150) NOT NULL UNIQUE,
-  `password_hash` VARCHAR(255) NOT NULL,
-  `telefono` VARCHAR(30) DEFAULT NULL,
-  `rol_id` INT NOT NULL,
-  `activo` TINYINT(1) DEFAULT 1,
-  FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE usuarios (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  telefono VARCHAR(30) DEFAULT NULL,
+  rol_id INT NOT NULL REFERENCES roles(id),
+  activo BOOLEAN DEFAULT TRUE
+);
 
 -- 3. REPARTIDORES
-CREATE TABLE `repartidores` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `usuario_id` INT NOT NULL UNIQUE,
-  `nombre` VARCHAR(100) NOT NULL,
-  `apellido` VARCHAR(100) NOT NULL,
-  `tipo_vehiculo` ENUM('bicicleta', 'moto', 'auto') NOT NULL,
-  `patente` VARCHAR(20) DEFAULT NULL,
-  `latitud_actual` DECIMAL(10, 8) DEFAULT -34.603722,
-  `longitud_actual` DECIMAL(11, 8) DEFAULT -58.381592,
-  `disponible` TINYINT(1) DEFAULT 0,
-  `verificado` TINYINT(1) DEFAULT 0,
-  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE repartidores (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  usuario_id INT NOT NULL UNIQUE REFERENCES usuarios(id) ON DELETE CASCADE,
+  nombre VARCHAR(100) NOT NULL,
+  apellido VARCHAR(100) NOT NULL,
+  tipo_vehiculo VARCHAR(20) NOT NULL CHECK (tipo_vehiculo IN ('bicicleta', 'moto', 'auto')),
+  patente VARCHAR(20) DEFAULT NULL,
+  latitud_actual NUMERIC(10, 8) DEFAULT -34.603722,
+  longitud_actual NUMERIC(11, 8) DEFAULT -58.381592,
+  disponible BOOLEAN DEFAULT FALSE,
+  verificado BOOLEAN DEFAULT FALSE
+);
 
 -- 4. PERFIL REPARTIDOR
-CREATE TABLE `perfil_repartidor` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `repartidor_id` INT NOT NULL UNIQUE,
-  `calificacion_promedio` DECIMAL(3, 2) DEFAULT 5.00,
-  `total_entregas` INT DEFAULT 0,
-  `entregas_a_tiempo` INT DEFAULT 0,
-  `zona_principal` VARCHAR(150) DEFAULT 'Buenos Aires Centro',
-  FOREIGN KEY (`repartidor_id`) REFERENCES `repartidores` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE perfil_repartidor (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  repartidor_id INT NOT NULL UNIQUE REFERENCES repartidores(id) ON DELETE CASCADE,
+  calificacion_promedio NUMERIC(3, 2) DEFAULT 5.00,
+  total_entregas INT DEFAULT 0,
+  entregas_a_tiempo INT DEFAULT 0,
+  zona_principal VARCHAR(150) DEFAULT 'Buenos Aires Centro'
+);
 
 -- 5. COMERCIOS
-CREATE TABLE `comercios` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `usuario_id` INT NOT NULL UNIQUE,
-  `nombre_comercio` VARCHAR(150) NOT NULL,
-  `direccion` VARCHAR(255) NOT NULL,
-  `latitud` DECIMAL(10, 8) NOT NULL,
-  `longitud` DECIMAL(11, 8) NOT NULL,
-  `horario_apertura` TIME DEFAULT '08:00:00',
-  `horario_cierre` TIME DEFAULT '23:59:00',
-  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE comercios (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  usuario_id INT NOT NULL UNIQUE REFERENCES usuarios(id) ON DELETE CASCADE,
+  nombre_comercio VARCHAR(150) NOT NULL,
+  direccion VARCHAR(255) NOT NULL,
+  latitud NUMERIC(10, 8) NOT NULL,
+  longitud NUMERIC(11, 8) NOT NULL,
+  horario_apertura TIME DEFAULT '08:00:00',
+  horario_cierre TIME DEFAULT '23:59:00'
+);
 
 -- 6. EMPRENDEDORES
-CREATE TABLE `emprendedores` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `usuario_id` INT NOT NULL UNIQUE,
-  `nombre_emprendimiento` VARCHAR(150) NOT NULL,
-  `rubro` VARCHAR(100) NOT NULL,
-  `descripcion` TEXT DEFAULT NULL,
-  `historia_familiar` TEXT DEFAULT NULL,
-  `direccion` VARCHAR(255) NOT NULL,
-  `latitud` DECIMAL(10, 8) NOT NULL,
-  `longitud` DECIMAL(11, 8) NOT NULL,
-  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE emprendedores (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  usuario_id INT NOT NULL UNIQUE REFERENCES usuarios(id) ON DELETE CASCADE,
+  nombre_emprendimiento VARCHAR(150) NOT NULL,
+  rubro VARCHAR(100) NOT NULL,
+  descripcion TEXT DEFAULT NULL,
+  historia_familiar TEXT DEFAULT NULL,
+  direccion VARCHAR(255) NOT NULL,
+  latitud NUMERIC(10, 8) NOT NULL,
+  longitud NUMERIC(11, 8) NOT NULL
+);
 
--- 7. TURNOS
-CREATE TABLE `turnos` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `comercio_id` INT NOT NULL,
-  `repartidor_id` INT DEFAULT NULL,
-  `fecha` DATE NOT NULL,
-  `hora_inicio` TIME NOT NULL,
-  `hora_fin` TIME NOT NULL,
-  `monto_total` DECIMAL(10,2) NOT NULL,
-  `monto_repartidor` DECIMAL(10,2) NOT NULL, -- 80%
-  `monto_plataforma` DECIMAL(10,2) NOT NULL, -- 20%
-  `estado` ENUM('disponible', 'confirmado', 'en_progreso', 'completado', 'cancelado') DEFAULT 'disponible',
-  FOREIGN KEY (`comercio_id`) REFERENCES `comercios` (`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`repartidor_id`) REFERENCES `repartidores` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- 7. TURNOS (Bloques de 4 horas B2B)
+CREATE TABLE turnos (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  comercio_id INT NOT NULL REFERENCES comercios(id) ON DELETE CASCADE,
+  repartidor_id INT DEFAULT NULL REFERENCES repartidores(id) ON DELETE SET NULL,
+  fecha DATE NOT NULL,
+  hora_inicio TIME NOT NULL,
+  hora_fin TIME NOT NULL,
+  monto_total NUMERIC(10,2) NOT NULL,
+  monto_repartidor NUMERIC(10,2) NOT NULL, -- 80%
+  monto_plataforma NUMERIC(10,2) NOT NULL, -- 20%
+  estado VARCHAR(20) DEFAULT 'disponible' CHECK (estado IN ('disponible', 'confirmado', 'en_progreso', 'completado', 'cancelado'))
+);
 
 -- 8. ENTREGAS UNICAS
-CREATE TABLE `entregas_unicas` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `emprendedor_id` INT NOT NULL,
-  `repartidor_id` INT DEFAULT NULL,
-  `direccion_origen` VARCHAR(255) NOT NULL,
-  `direccion_destino` VARCHAR(255) NOT NULL,
-  `tamano_paquete` ENUM('pequeño', 'mediano', 'grande') DEFAULT 'mediano',
-  `monto_total` DECIMAL(10,2) NOT NULL,
-  `monto_repartidor` DECIMAL(10,2) NOT NULL, -- 80%
-  `monto_plataforma` DECIMAL(10,2) NOT NULL, -- 20%
-  `estado` ENUM('disponible', 'asignado', 'recolectado', 'en_camino', 'entregado', 'fallido') DEFAULT 'disponible',
-  FOREIGN KEY (`emprendedor_id`) REFERENCES `emprendedores` (`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`repartidor_id`) REFERENCES `repartidores` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE entregas_unicas (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  emprendedor_id INT NOT NULL REFERENCES emprendedores(id) ON DELETE CASCADE,
+  repartidor_id INT DEFAULT NULL REFERENCES repartidores(id) ON DELETE SET NULL,
+  direccion_origen VARCHAR(255) NOT NULL,
+  direccion_destino VARCHAR(255) NOT NULL,
+  tamano_paquete VARCHAR(20) DEFAULT 'mediano' CHECK (tamano_paquete IN ('pequeño', 'mediano', 'grande')),
+  monto_total NUMERIC(10,2) NOT NULL,
+  monto_repartidor NUMERIC(10,2) NOT NULL, -- 80%
+  monto_plataforma NUMERIC(10,2) NOT NULL, -- 20%
+  estado VARCHAR(20) DEFAULT 'disponible' CHECK (estado IN ('disponible', 'asignado', 'recolectado', 'en_camino', 'entregado', 'fallido'))
+);
 
 -- 9. BILLETERAS
-CREATE TABLE `billeteras` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `usuario_id` INT NOT NULL UNIQUE,
-  `saldo` DECIMAL(12,2) DEFAULT 0.00,
-  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE billeteras (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  usuario_id INT NOT NULL UNIQUE REFERENCES usuarios(id) ON DELETE CASCADE,
+  saldo NUMERIC(12,2) DEFAULT 0.00
+);
 
 -- 10. TRANSACCIONES
-CREATE TABLE `transacciones` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `usuario_id` INT NOT NULL,
-  `tipo` ENUM('ingreso_turno', 'ingreso_entrega', 'comision_plataforma', 'retiro', 'deposito') NOT NULL,
-  `monto` DECIMAL(10,2) NOT NULL,
-  `saldo_anterior` DECIMAL(12,2) NOT NULL,
-  `saldo_posterior` DECIMAL(12,2) NOT NULL,
-  `referencia` VARCHAR(100) DEFAULT NULL,
-  `fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE transacciones (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('ingreso_turno', 'ingreso_entrega', 'comision_plataforma', 'retiro', 'deposito')),
+  monto NUMERIC(10,2) NOT NULL,
+  saldo_anterior NUMERIC(12,2) NOT NULL,
+  saldo_posterior NUMERIC(12,2) NOT NULL,
+  referencia VARCHAR(100) DEFAULT NULL,
+  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 11. CATEGORIAS EMPRENDEDOR
-CREATE TABLE `categorias_emprendedor` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `emprendedor_id` INT NOT NULL,
-  `nombre` VARCHAR(100) NOT NULL,
-  FOREIGN KEY (`emprendedor_id`) REFERENCES `emprendedores` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE categorias_emprendedor (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  emprendedor_id INT NOT NULL REFERENCES emprendedores(id) ON DELETE CASCADE,
+  nombre VARCHAR(100) NOT NULL
+);
 
 -- 12. PRODUCTOS EMPRENDEDOR
-CREATE TABLE `productos_emprendedor` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `emprendedor_id` INT NOT NULL,
-  `categoria_id` INT NOT NULL,
-  `nombre` VARCHAR(150) NOT NULL,
-  `descripcion` TEXT DEFAULT NULL,
-  `precio` DECIMAL(10,2) NOT NULL,
-  `imagen_url` VARCHAR(255) DEFAULT NULL,
-  `stock` INT DEFAULT 0,
-  `disponible` TINYINT(1) DEFAULT 1,
-  FOREIGN KEY (`emprendedor_id`) REFERENCES `emprendedores` (`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`categoria_id`) REFERENCES `categorias_emprendedor` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE productos_emprendedor (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  emprendedor_id INT NOT NULL REFERENCES emprendedores(id) ON DELETE CASCADE,
+  categoria_id INT NOT NULL REFERENCES categorias_emprendedor(id) ON DELETE CASCADE,
+  nombre VARCHAR(150) NOT NULL,
+  descripcion TEXT DEFAULT NULL,
+  precio NUMERIC(10,2) NOT NULL,
+  imagen_url VARCHAR(255) DEFAULT NULL,
+  stock INT DEFAULT 0,
+  disponible BOOLEAN DEFAULT TRUE
+);
 
 -- 13. ZONAS CALIENTES
-CREATE TABLE `zonas_calientes` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `nombre_zona` VARCHAR(100) NOT NULL,
-  `latitud` DECIMAL(10, 8) NOT NULL,
-  `longitud` DECIMAL(11, 8) NOT NULL,
-  `radio_km` DECIMAL(4,2) DEFAULT 1.5,
-  `nivel_demanda` ENUM('bajo', 'medio', 'alto', 'critico') DEFAULT 'medio'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE zonas_calientes (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  nombre_zona VARCHAR(100) NOT NULL,
+  latitud NUMERIC(10, 8) NOT NULL,
+  longitud NUMERIC(11, 8) NOT NULL,
+  radio_km NUMERIC(4,2) DEFAULT 1.50,
+  nivel_demanda VARCHAR(20) DEFAULT 'medio' CHECK (nivel_demanda IN ('bajo', 'medio', 'alto', 'critico'))
+);
 
-SET FOREIGN_KEY_CHECKS = 1;
+-- ==========================================
+-- SEED DATA (Idempotente)
+-- ==========================================
 
--- SEED DATA
-INSERT INTO `roles` (`id`, `nombre`, `descripcion`) VALUES
-(1, 'Administrador', 'Supervisa la plataforma'),
-(2, 'Comercio', 'Contrata por bloques de 4 horas'),
-(3, 'Emprendedor', 'Contrata entregas individuales'),
-(4, 'Repartidor', 'Socio de reparto B2B');
+-- ROLES
+INSERT INTO roles (nombre, descripcion) VALUES
+('Administrador', 'Supervisa la plataforma B2B'),
+('Comercio', 'Contrata por bloques de 4 horas'),
+('Emprendedor', 'Contrata entregas individuales'),
+('Repartidor', 'Socio de reparto B2B')
+ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO `usuarios` (`id`, `email`, `password_hash`, `telefono`, `rol_id`, `activo`) VALUES
-(1, 'admin@deliveryplus.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541155551111', 1, 1),
-(2, 'repartidor@test.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541177772222', 4, 1),
-(3, 'trattoria@comercio.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541133334444', 2, 1),
-(4, 'nona@emprendedor.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541144446666', 3, 1);
+-- USUARIOS
+INSERT INTO usuarios (email, password_hash, telefono, rol_id, activo) VALUES
+('admin@deliveryplus.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541155551111', 1, TRUE),
+('repartidor@test.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541177772222', 4, TRUE),
+('trattoria@comercio.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541133334444', 2, TRUE),
+('nona@emprendedor.com', '$2a$10$vYg/Z7K.L9v67F0p8ZEn9.M8K23qYvVvjVjOQvWwA1uOn5vXvR8Z2', '+541144446666', 3, TRUE)
+ON CONFLICT (email) DO NOTHING;
 
-INSERT INTO `repartidores` (`id`, `usuario_id`, `nombre`, `apellido`, `tipo_vehiculo`, `patente`, `latitud_actual`, `longitud_actual`, `disponible`, `verificado`) VALUES
-(1, 2, 'Carlos', 'Gómez', 'moto', '99A-XYZ8', -34.598200, -58.421100, 1, 1);
+-- REPARTIDORES
+INSERT INTO repartidores (usuario_id, nombre, apellido, tipo_vehiculo, patente, latitud_actual, longitud_actual, disponible, verificado) VALUES
+(2, 'Carlos', 'Gómez', 'moto', '99A-XYZ8', -34.598200, -58.421100, TRUE, TRUE)
+ON CONFLICT (usuario_id) DO NOTHING;
 
-INSERT INTO `perfil_repartidor` (`id`, `repartidor_id`, `calificacion_promedio`, `total_entregas`, `entregas_a_tiempo`, `zona_principal`) VALUES
-(1, 1, 4.92, 420, 412, 'Palermo & Recoleta');
+-- PERFIL REPARTIDOR
+INSERT INTO perfil_repartidor (repartidor_id, calificacion_promedio, total_entregas, entregas_a_tiempo, zona_principal) VALUES
+(1, 4.92, 420, 412, 'Palermo & Recoleta')
+ON CONFLICT (repartidor_id) DO NOTHING;
 
-INSERT INTO `comercios` (`id`, `usuario_id`, `nombre_comercio`, `direccion`, `latitud`, `longitud`) VALUES
-(1, 3, 'La Trattoria', 'Av. Santa Fe 2345, Palermo', -34.591200, -58.411100);
+-- COMERCIOS
+INSERT INTO comercios (usuario_id, nombre_comercio, direccion, latitud, longitud) VALUES
+(3, 'La Trattoria', 'Av. Santa Fe 2345, Palermo', -34.591200, -58.411100)
+ON CONFLICT (usuario_id) DO NOTHING;
 
-INSERT INTO `emprendedores` (`id`, `usuario_id`, `nombre_emprendimiento`, `rubro`, `descripcion`, `historia_familiar`, `direccion`, `latitud`, `longitud`) VALUES
-(1, 4, 'Pastas de la Nona', 'Gastronomía Artesanal', 'Pastas caseras frescas receta italiana de 1948.', 'Nuestra abuela Filomena amaba cocinar. Seguimos su legado con la misma tabla de madera.', 'Serrano 1230, Villa Crespo', -34.595600, -58.435000);
+-- EMPRENDEDORES
+INSERT INTO emprendedores (usuario_id, nombre_emprendimiento, rubro, descripcion, historia_familiar, direccion, latitud, longitud) VALUES
+(1, 'Pastas de la Nona', 'Gastronomía Artesanal', 'Pastas caseras frescas receta italiana de 1948.', 'Nuestra abuela Filomena amaba cocinar. Seguimos su legado con la misma tabla de madera.', 'Serrano 1230, Villa Crespo', -34.595600, -58.435000)
+ON CONFLICT (usuario_id) DO NOTHING;
 
-INSERT INTO `billeteras` (`id`, `usuario_id`, `saldo`) VALUES
-(1, 1, 5000.00),
-(2, 2, 24000.00),
-(3, 3, 15000.00),
-(4, 4, 6000.00);
+-- BILLETERAS
+INSERT INTO billeteras (usuario_id, saldo) VALUES
+(1, 5000.00),
+(2, 24000.00),
+(3, 15000.00),
+(4, 6000.00)
+ON CONFLICT (usuario_id) DO NOTHING;
 
-INSERT INTO `transacciones` (`id`, `usuario_id`, `tipo`, `monto`, `saldo_anterior`, `saldo_posterior`, `referencia`) VALUES
-(1, 2, 'ingreso_turno', 12000.00, 12000.00, 24000.00, 'turno_1'),
-(2, 1, 'comision_plataforma', 3000.00, 2000.00, 5000.00, 'turno_1');
+-- TRANSACCIONES
+INSERT INTO transacciones (usuario_id, tipo, monto, saldo_anterior, saldo_posterior, referencia) VALUES
+(2, 'ingreso_turno', 12000.00, 12000.00, 24000.00, 'turno_1'),
+(1, 'comision_plataforma', 3000.00, 2000.00, 5000.00, 'turno_1')
+ON CONFLICT DO NOTHING;
 
-INSERT INTO `turnos` (`id`, `comercio_id`, `repartidor_id`, `fecha`, `hora_inicio`, `hora_fin`, `monto_total`, `monto_repartidor`, `monto_plataforma`, `estado`) VALUES
-(1, 1, NULL, CURDATE(), '20:00:00', '23:59:59', 15000.00, 12000.00, 3000.00, 'disponible');
+-- TURNOS
+INSERT INTO turnos (comercio_id, repartidor_id, fecha, hora_inicio, hora_fin, monto_total, monto_repartidor, monto_plataforma, estado) VALUES
+(1, NULL, CURRENT_DATE, '20:00:00', '23:59:59', 15000.00, 12000.00, 3000.00, 'disponible')
+ON CONFLICT DO NOTHING;
 
-INSERT INTO `entregas_unicas` (`id`, `emprendedor_id`, `repartidor_id`, `direccion_origen`, `direccion_destino`, `tamano_paquete`, `monto_total`, `monto_repartidor`, `monto_plataforma`, `estado`) VALUES
-(1, 1, NULL, 'Serrano 1230, Villa Crespo', 'Av. Scalabrini Ortiz 2800, Palermo', 'mediano', 3500.00, 2800.00, 700.00, 'disponible');
+-- ENTREGAS UNICAS
+INSERT INTO entregas_unicas (emprendedor_id, repartidor_id, direccion_origen, direccion_destino, tamano_paquete, monto_total, monto_repartidor, monto_plataforma, estado) VALUES
+(1, NULL, 'Serrano 1230, Villa Crespo', 'Av. Scalabrini Ortiz 2800, Palermo', 'mediano', 3500.00, 2800.00, 700.00, 'disponible')
+ON CONFLICT DO NOTHING;
 
-INSERT INTO `zonas_calientes` (`id`, `nombre_zona`, `latitud`, `longitud`, `radio_km`, `nivel_demanda`) VALUES
-(1, 'Zona Comercial Palermo', -34.591200, -58.411100, 1.80, 'alto'),
-(2, 'Área Residencial Belgrano', -34.562000, -58.456000, 2.00, 'critico');
+-- ZONAS CALIENTES
+INSERT INTO zonas_calientes (nombre_zona, latitud, longitud, radio_km, nivel_demanda) VALUES
+('Zona Comercial Palermo', -34.591200, -58.411100, 1.80, 'alto'),
+('Área Residencial Belgrano', -34.562000, -58.456000, 2.00, 'critico')
+ON CONFLICT DO NOTHING;
