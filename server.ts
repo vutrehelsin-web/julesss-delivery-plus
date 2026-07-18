@@ -29,7 +29,7 @@ dns.setDefaultResultOrder("ipv4first");
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT.trim(), 10) : 10000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT.trim(), 10) : 3000;
 
   app.use(express.json());
 
@@ -279,7 +279,7 @@ No agregues markdown adicional, explicaciones por fuera del JSON, ni barras inve
     });
   }
 
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server starting up on http://localhost:${PORT}`);
   });
 }
