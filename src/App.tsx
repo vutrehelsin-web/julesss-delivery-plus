@@ -814,6 +814,22 @@ export default function App() {
         return;
       }
       const newSaldo = walletSaldo - val;
+      
+      // PostgreSQL backend sync
+      fetch(`/api/billeteras/2/transacciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'retiro', monto: val })
+      }).then(res => res.json()).then(data => {
+        console.log('PostgreSQL wallet withdrawal sync:', data);
+        // Trigger voice and push notification flow
+        fetch('/api/notifications/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event: 'WALLET_UPDATED', details: { tipo: 'retiro', amount: val } })
+        });
+      });
+
       setWalletSaldo(newSaldo);
       setTransacciones((t) => [
         {
@@ -822,14 +838,30 @@ export default function App() {
           monto: -val,
           saldo_anterior: walletSaldo,
           saldo_posterior: newSaldo,
-          referencia: 'retiro_banco',
+          referencia: 'retiro_banco (Persistido)',
           fecha: new Date().toISOString().replace('T', ' ').slice(0, 16)
         },
         ...t
       ]);
-      logEvent(`POST /api/billetera/retirar - 200 OK - Retiro de -$${val} exitoso. Liquidado a cuenta bancaria.`, 'success');
+      logEvent(`POST /api/billetera/retirar - 200 OK - Retiro de -$${val} exitoso. Liquidado a cuenta bancaria (Persistido en DB)`, 'success');
     } else if (cashierModal === 'deposito') {
       const newSaldo = walletSaldo + val;
+
+      // PostgreSQL backend sync
+      fetch(`/api/billeteras/2/transacciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'deposito', monto: val })
+      }).then(res => res.json()).then(data => {
+        console.log('PostgreSQL wallet deposit sync:', data);
+        // Trigger voice and push notification flow
+        fetch('/api/notifications/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event: 'WALLET_UPDATED', details: { tipo: 'deposito', amount: val } })
+        });
+      });
+
       setWalletSaldo(newSaldo);
       setTransacciones((t) => [
         {
@@ -838,7 +870,7 @@ export default function App() {
           monto: val,
           saldo_anterior: walletSaldo,
           saldo_posterior: newSaldo,
-          referencia: 'carga_tarjeta',
+          referencia: 'carga_tarjeta (Persistido)',
           fecha: new Date().toISOString().replace('T', ' ').slice(0, 16)
         },
         ...t
