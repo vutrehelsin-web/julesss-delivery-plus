@@ -168,7 +168,19 @@ CREATE TABLE zonas_calientes (
 );
 
 -- ==========================================
--- SEED DATA (Idempotente)
+
+-- ==========================================
+-- OPTIMIZACIÓN DE ÍNDICES (Fase 8 - Closed Beta)
+-- ==========================================
+CREATE INDEX IF NOT EXISTS idx_usuarios_email_rol ON usuarios (email, rol_id);
+CREATE INDEX IF NOT EXISTS idx_repartidores_usuario_disp ON repartidores (usuario_id, disponible);
+CREATE INDEX IF NOT EXISTS idx_turnos_comercio_rep_estado ON turnos (comercio_id, repartidor_id, estado);
+CREATE INDEX IF NOT EXISTS idx_entregas_unicas_emp_rep ON entregas_unicas (emprendedor_id, repartidor_id, estado);
+CREATE INDEX IF NOT EXISTS idx_transacciones_usuario_tipo ON transacciones (usuario_id, tipo);
+CREATE INDEX IF NOT EXISTS idx_productos_emprendedor_cat ON productos_emprendedor (emprendedor_id, categoria_id);
+
+
+
 -- ==========================================
 
 -- ROLES
