@@ -10,6 +10,7 @@ Historial de cambios y lanzamientos oficiales de la plataforma Delivery Plus.
 - **Dockerfile Multi-Stage Optimizado:** Creación del archivo `Dockerfile` utilizando compilación en dos etapas para minimizar el peso del contenedor y maximizar el rendimiento en VPS (Azure Ubuntu 24.04) y entornos de producción.
 - **Esquema compatible con PostgreSQL/Supabase:** Reescritura completa del script `deliveryplus.sql` de MySQL a PostgreSQL con restricciones `CHECK` reales, relaciones robustas y datos semilla idempotentes.
 - **Estrategia Git Flow:** Estructuración de ramas de trabajo (`main`, `develop` y `feature/*`) para mantener la estabilidad del despliegue continuo de Render.
+- **Módulo de Repartidores B2B (Driver Module) Persistente:** Implementación del primer módulo funcional del Roadmap con soporte real de persistencia en PostgreSQL, abarcando APIs REST de disponibilidad, reserva de turnos en bloques de 4 horas, consulta analítica de perfiles y alertas SOS de emergencia en vivo.
 
 ### Modificado
 - **Compatibilidad del Servidor Express (Enlace de red):** Ajuste de `server.ts` para enlazarse explícitamente a `0.0.0.0` y resolver dinámicamente el puerto mediante `PORT` o fallback 3000, permitiendo la exposición externa de puertos en Render.

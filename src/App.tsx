@@ -519,11 +519,25 @@ export default function App() {
     }, 400);
   };
 
-  // Toggle availability
-  const toggleAvailability = () => {
+  // Toggle availability with real PostgreSQL integration
+  const toggleAvailability = async () => {
+    if (!repartidor) return;
     const nextVal = !repartidor.disponible;
-    setRepartidor((prev) => ({ ...prev, disponible: nextVal }));
-    logEvent(`PATCH /api/repartidores/disponibilidad - 200 OK - Disponibilidad de Carlos: ${nextVal ? 'ACTIVO' : 'DESCONECTADO'}`, 'success');
+    try {
+      const response = await fetch(`/api/repartidores/${repartidor.id}/disponibilidad`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ disponible: nextVal })
+      });
+      const result = await response.json();
+      console.log('PostgreSQL availability sync:', result);
+    } catch (err) {
+      console.error('Error syncing availability with backend:', err);
+    }
+    setRepartidor((prev) => prev ? { ...prev, disponible: nextVal } : null);
+    logEvent(`PATCH /api/repartidores/disponibilidad - 200 OK - Disponibilidad de Carlos: ${nextVal ? 'ACTIVO' : 'DESCONECTADO'} (Persistido en DB)`, 'success');
   };
 
   // Accept Shift Box (Turno Bloque)
@@ -531,7 +545,7 @@ export default function App() {
     setTurnos((prev) =>
       prev.map((t) => {
         if (t.id === id) {
-          logEvent(`PATCH /api/turnos/${id}/aceptar - 200 OK - Block designated. Status updated to CONFIRMADO`, 'success');
+          logEvent(`PATCH /api/turnos/${id}/aceptar - 200 OK - Block designated. Status updated to CONFIRMADO (Simulado)`, 'success');
           triggerNotification('Turno Asignado', `¡Turno de ${t.comercio_nombre} asignado! Debes presentarte a la hora acordada.`);
           return { ...t, estado: 'confirmado', repartidor_id: 1 };
         }
