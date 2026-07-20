@@ -58,6 +58,7 @@ import { BrandLogo } from './components/BrandLogo';
 import { ArgentinaMap } from './components/ArgentinaMap';
 import { AIChatAssistant } from './components/AIChatAssistant';
 import { AdminChartsCard, MPWalletCard, IARecommendsCard } from './components/AdminComponents';
+import { ShowcaseV3 } from './components/ShowcaseV3';
 
 import { Usuario, Repartidor, Turno, EntregaUnica, Transaccion, Mensaje } from './types';
 
@@ -240,6 +241,29 @@ export default function App() {
     }
     
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Live real-time Weather Integrator on Mount
+  useEffect(() => {
+    const fetchLiveWeather = async () => {
+      try {
+        logEvent("Consultando clima real de Buenos Aires en vivo...", "info");
+        const response = await fetch("/api/weather");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setWeatherCondition(data.condition);
+            setTemperature(Math.round(data.temp * 10) / 10);
+            setMultiplier(data.multiplier);
+            logEvent(`Clima real sincronizado [vía ${data.fromApi}]: ${data.condition.toUpperCase()} (${data.temp}°C, tarifa: ${data.multiplier}x)`, "success");
+            logEvent(`[IA Prediction] ${data.description}`, "info");
+          }
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch live weather:", err);
+      }
+    };
+    fetchLiveWeather();
   }, []);
 
   // Native Sensors Update Loop (GPS and Gyroscope)
@@ -4082,6 +4106,21 @@ CREATE TABLE \`turnos\` (
         {/* ================= PREMIUM WORKSPACE TARGET: FUTURISTIC SHOWCASE MOCKUPS ================= */}
         {activeWorkspaceTab === 'mockups' && (
           <div className="lg:col-span-12 w-full overflow-y-auto max-h-[calc(100vh-120px)] pr-1 text-left">
+            <ShowcaseV3
+              turnos={turnos}
+              setTurnos={setTurnos}
+              entregas={entregas}
+              setEntregas={setEntregas}
+              logEvent={logEvent}
+              triggerNotification={triggerNotification}
+              weatherCondition={weatherCondition}
+              setWeatherCondition={setWeatherCondition}
+              temperature={temperature}
+              setTemperature={setTemperature}
+              multiplier={multiplier}
+              setMultiplier={setMultiplier}
+              handleWeatherChange={handleWeatherChange}
+            />
           </div>
         )}
 
