@@ -180,6 +180,7 @@ export default function App() {
   const audioIntervalRef = useRef<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('mockups');
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [activeCodeModule, setActiveCodeModule] = useState('flutter');
   const [selectedCodeFile, setSelectedCodeFile] = useState('home_screen.dart');
   const [copiedNotification, setCopiedNotification] = useState(false);
@@ -1041,183 +1042,186 @@ CREATE TABLE \`turnos\` (
           </div>
         </div>
 
-        {/* Workspace views segmented controller matching landing UI */}
-        <div className="flex bg-[#141414] border border-gray-brand p-1.5 rounded-2xl shrink-0 shadow-inner gap-1">
-          <button
-            onClick={() => {
-              setActiveWorkspaceTab('mockups');
-              logEvent('Configuración: Redirigiendo a Galería de Mockups Nocturnos', 'info');
-            }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 select-none duration-250 cursor-pointer ${
-              activeWorkspaceTab === 'mockups'
-                ? 'bg-gradient-to-r from-blue-brand to-[#0051A8] text-white shadow-lg shadow-blue-brand/20 font-extrabold'
-                : 'text-gray-400 hover:text-white hover:bg-[#1F1F1F]/40'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-yellow-405 text-yellow-400" />
-            ✨ Maquetas Premium
-          </button>
-          <button
-            onClick={() => {
-              setActiveWorkspaceTab('consola');
-              logEvent('Configuración: Redirigiendo a Consola de Desarrollo', 'info');
-            }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 select-none duration-250 cursor-pointer ${
-              activeWorkspaceTab === 'consola'
-                ? 'bg-gradient-to-r from-blue-brand to-[#0051A8] text-white shadow-lg shadow-blue-brand/20 font-extrabold'
-                : 'text-gray-400 hover:text-white hover:bg-[#1F1F1F]/40'
-            }`}
-          >
-            <Sliders className="w-3.5 h-3.5 text-blue-brand" />
-            Consola de Simulación
-          </button>
-          <button
-            onClick={() => {
-              setActiveWorkspaceTab('modulos');
-              logEvent('Configuración: Abriendo Visor de Módulos del Ecosistema B2B', 'success');
-            }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 select-none duration-250 cursor-pointer ${
-              activeWorkspaceTab === 'modulos'
-                ? 'bg-gradient-to-r from-blue-brand to-[#0051A8] text-white shadow-lg shadow-blue-brand/20 font-extrabold'
-                : 'text-gray-400 hover:text-white hover:bg-[#1F1F1F]/40'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5 text-blue-brand" />
-            Estructura Código
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          <div className="bg-green-success/10 text-green-success px-3 py-1.5 rounded-lg border border-green-success/15 flex items-center gap-1.5 font-semibold">
+        {/* Polished, modern Hamburger Menu Dropdown Trigger and list */}
+        <div className="flex items-center gap-4 relative">
+          <div className="hidden md:flex items-center gap-3 text-xs bg-black/45 border border-gray-brand px-3 py-1.5 rounded-xl">
             <span className="w-2 h-2 rounded-full bg-green-success animate-ping"></span>
-            Database Local: On
+            <span className="text-gray-400 font-bold">Base de Datos:</span>
+            <span className="text-white font-black font-mono">SUPABASE</span>
           </div>
-          <div className="bg-blue-brand/10 text-white px-3 py-1.5 rounded-lg border border-blue-brand/15 flex items-center gap-1.5 font-mono text-[10px]">
-            <Terminal className="w-3.5 h-3.5 text-blue-brand" />
-            Port: N/A
+
+          <div className="relative">
+            <button
+              onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}
+              className="bg-[#141414] hover:bg-[#1F1F1F] border border-gray-brand p-3 rounded-xl transition-all cursor-pointer flex items-center gap-2 text-xs font-bold text-white shadow-md relative z-30 select-none active:scale-95"
+            >
+              <Menu className="w-4 h-4 text-blue-brand" />
+              <span>Menú Consola</span>
+            </button>
+
+            {isHamburgerOpen && (
+              <>
+                {/* Backdrop overlay */}
+                <div 
+                  className="fixed inset-0 z-20 cursor-default" 
+                  onClick={() => setIsHamburgerOpen(false)} 
+                />
+                
+                {/* Dropdown Box card */}
+                <div className="absolute right-0 mt-2.5 w-64 bg-[#141414] border border-gray-brand rounded-2xl shadow-2xl p-4 space-y-4 z-30 animate-fade-in text-left">
+                  
+                  {/* Category 1 */}
+                  <div className="space-y-2">
+                    <span className="text-[9px] text-gray-500 font-black uppercase tracking-wider block border-b border-gray-800 pb-1">
+                      📂 Vistas del Workspace
+                    </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      <button
+                        onClick={() => {
+                          setActiveWorkspaceTab('mockups');
+                          setIsHamburgerOpen(false);
+                          logEvent('Configuración: Redirigiendo a Maquetas Premium V3', 'info');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activeWorkspaceTab === 'mockups'
+                            ? 'bg-blue-brand/10 text-blue-brand font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                        ✨ Maquetas Premium V3
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveWorkspaceTab('consola');
+                          setIsHamburgerOpen(false);
+                          logEvent('Configuración: Redirigiendo a Consola de Desarrollo', 'info');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activeWorkspaceTab === 'consola'
+                            ? 'bg-blue-brand/10 text-blue-brand font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <Sliders className="w-3.5 h-3.5 text-blue-brand" />
+                        🔧 Consola de Simulación
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveWorkspaceTab('modulos');
+                          setIsHamburgerOpen(false);
+                          logEvent('Configuración: Abriendo Visor de Módulos B2B', 'success');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activeWorkspaceTab === 'modulos'
+                            ? 'bg-blue-brand/10 text-blue-brand font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <Layers className="w-3.5 h-3.5 text-blue-brand" />
+                        📦 Estructura Código
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Category 2 */}
+                  <div className="space-y-2">
+                    <span className="text-[9px] text-gray-500 font-black uppercase tracking-wider block border-b border-gray-800 pb-1">
+                      🌐 Portales Multi-Sesión
+                    </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      <button
+                        onClick={() => {
+                          setActivePortalView('sandbox');
+                          setIsHamburgerOpen(false);
+                          logEvent('Navegación: Acceso a Consola Master', 'info');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activePortalView === 'sandbox'
+                            ? 'bg-blue-brand/10 text-blue-brand font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <Sliders className="w-3.5 h-3.5 text-blue-brand" />
+                        Consola Master (Todo)
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActivePortalView('comercio');
+                          setIsHamburgerOpen(false);
+                          logEvent('Navegación: Acceso a Comercios B2B', 'info');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activePortalView === 'comercio'
+                            ? 'bg-blue-brand/10 text-blue-brand font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <Award className="w-3.5 h-3.5 text-yellow-500" />
+                        🏢 Comercios B2B
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActivePortalView('emprendedor');
+                          setIsHamburgerOpen(false);
+                          logEvent('Navegación: Acceso a Emprendedores', 'info');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activePortalView === 'emprendedor'
+                            ? 'bg-green-success/10 text-green-success font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-green-success" />
+                        📦 Emprendedores
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActivePortalView('repartidor');
+                          setIsHamburgerOpen(false);
+                          logEvent('Navegación: Acceso a Repartidores', 'info');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activePortalView === 'repartidor'
+                            ? 'bg-blue-brand/10 text-blue-brand font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <Bike className="w-3.5 h-3.5 text-blue-brand" />
+                        🚴 Repartidor (Carlos)
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActivePortalView('admin');
+                          setIsHamburgerOpen(false);
+                          logEvent('Navegación: Acceso a Admin', 'info');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all ${
+                          activePortalView === 'admin'
+                            ? 'bg-cyan-500/10 text-cyan-400 font-extrabold'
+                            : 'text-gray-400 hover:text-white hover:bg-black/40'
+                        }`}
+                      >
+                        <Database className="w-3.5 h-3.5 text-cyan-400" />
+                        👑 Admin Control
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
-
-      {/* --- MULTI-SESSION PORTAL NAVIGATION BAR (Landing page style) --- */}
-      <div className="bg-[#1F1F1F] border-b border-gray-brand px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10 text-xs shadow-md shrink-0">
-        <div className="flex items-center gap-2 text-gray-400">
-          <Sparkles className="w-4 h-4 text-blue-brand animate-pulse shrink-0" />
-          <span className="font-semibold text-white whitespace-nowrap font-display">Simulador Multi-Sesión B2B:</span>
-          <span className="hidden sm:inline">Abre estos portales en pestañas independientes para simular el ecosistema logístico en tiempo real:</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 font-semibold">
-          {/* Master Consola */}
-          <div className={`flex items-center bg-[#0A0A0A] border p-0.5 rounded-xl transition-all ${activePortalView === 'sandbox' ? 'border-blue-brand/30' : 'border-gray-brand'}`}>
-            <button
-              onClick={() => setActivePortalView('sandbox')}
-              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-all text-[11px] font-bold cursor-pointer ${
-                activePortalView === 'sandbox'
-                  ? 'bg-blue-brand/10 text-blue-brand'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5 text-blue-brand" />
-              Consola Master (Todo)
-            </button>
-          </div>
-
-          {/* Comercio */}
-          <div className={`flex items-center bg-[#0A0A0A] border p-0.5 rounded-xl transition-all ${activePortalView === 'comercio' ? 'border-blue-brand/30' : 'border-gray-brand'}`}>
-            <button
-              onClick={() => setActivePortalView('comercio')}
-              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-all text-[11px] font-bold cursor-pointer ${
-                activePortalView === 'comercio'
-                  ? 'bg-blue-brand/10 text-blue-brand'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Award className="w-3.5 h-3.5 text-blue-brand" />
-              🏢 Comercios
-            </button>
-            <a
-              href="/?portal=comercio"
-              target="_blank"
-              title="Abrir Portal Comercios en nueva pestaña"
-              className="p-1 text-gray-500 hover:text-blue-brand hover:bg-[#1F1F1F] rounded-lg transition-all"
-            >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
-          {/* Emprendedor */}
-          <div className={`flex items-center bg-[#0A0A0A] border p-0.5 rounded-xl transition-all ${activePortalView === 'emprendedor' ? 'border-green-success/30' : 'border-gray-brand'}`}>
-            <button
-              onClick={() => setActivePortalView('emprendedor')}
-              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-all text-[11px] font-bold cursor-pointer ${
-                activePortalView === 'emprendedor'
-                  ? 'bg-green-success/10 text-green-success'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <MapPin className="w-3.5 h-3.5 text-green-success" />
-              📦 Emprendedores
-            </button>
-            <a
-              href="/?portal=emprendedor"
-              target="_blank"
-              title="Abrir Portal Emprendedores en nueva pestaña"
-              className="p-1 text-gray-500 hover:text-green-success hover:bg-[#1F1F1F] rounded-lg transition-all"
-            >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
-          {/* Repartidor */}
-          <div className={`flex items-center bg-[#0A0A0A] border p-0.5 rounded-xl transition-all ${activePortalView === 'repartidor' ? 'border-blue-brand/30' : 'border-gray-brand'}`}>
-            <button
-              onClick={() => setActivePortalView('repartidor')}
-              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-all text-[11px] font-bold cursor-pointer ${
-                activePortalView === 'repartidor'
-                  ? 'bg-blue-brand/10 text-blue-brand'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Bike className="w-3.5 h-3.5 text-blue-brand" />
-              🚴 Repartidor (Carlos)
-            </button>
-            <a
-              href="/?portal=repartidor"
-              target="_blank"
-              title="Abrir App de Carlos en nueva pestaña"
-              className="p-1 text-gray-500 hover:text-blue-brand hover:bg-[#1F1F1F] rounded-lg transition-all"
-            >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
-          {/* Admin */}
-          <div className={`flex items-center bg-[#0A0A0A] border p-0.5 rounded-xl transition-all ${activePortalView === 'admin' ? 'border-cyan-500/30' : 'border-gray-brand'}`}>
-            <button
-              onClick={() => setActivePortalView('admin')}
-              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-all text-[11px] font-bold cursor-pointer ${
-                activePortalView === 'admin'
-                  ? 'bg-cyan-500/10 text-cyan-400'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5 text-cyan-400" />
-              👑 Admin & Split
-            </button>
-            <a
-              href="/?portal=admin"
-              target="_blank"
-              title="Abrir Portal de Administrador en nueva pestaña"
-              className="p-1 text-gray-500 hover:text-cyan-400 hover:bg-[#1F1F1F] rounded-lg transition-all"
-            >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-      </div>
-
-
-      {/* --- STANDALONE EXCLUSIVE VIEWPORT ROUTING --- */}
+      
+            {/* --- STANDALONE EXCLUSIVE VIEWPORT ROUTING --- */}
       {activePortalView === 'dashboard' && <MainDashboard />}
       {activePortalView === 'comercio' && (
         <div className="flex-1 overflow-y-auto p-6 max-w-6xl mx-auto w-full relative z-10 space-y-6 text-left">
