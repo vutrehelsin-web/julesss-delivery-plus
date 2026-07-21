@@ -159,7 +159,7 @@ export default function App() {
   const [consoleLogs, setConsoleLogs] = useState<any[]>([]);
   
   // Portal state
-  const [activePortalView, setActivePortalView] = useState<'dashboard' | 'sandbox' | 'descarga' | 'comercio' | 'emprendedor' | 'repartidor' | 'admin'>('dashboard');
+  const [activePortalView, setActivePortalView] = useState<'dashboard' | 'sandbox' | 'descarga' | 'comercio' | 'emprendedor' | 'repartidor' | 'admin'>('sandbox');
   
   // Custom Voice for Assistant
   const [customVoiceId, setCustomVoiceId] = useState<string>('ByVRQtaK1WDOvTmP1PKO');
