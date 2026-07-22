@@ -59,6 +59,7 @@ import { ArgentinaMap } from './components/ArgentinaMap';
 import { AIChatAssistant } from './components/AIChatAssistant';
 import { AdminChartsCard, MPWalletCard, IARecommendsCard } from './components/AdminComponents';
 import { ShowcaseV3 } from './components/ShowcaseV3';
+import { ProductionApp } from './components/ProductionApp';
 
 import { Usuario, Repartidor, Turno, EntregaUnica, Transaccion, Mensaje } from './types';
 
@@ -1018,6 +1019,29 @@ CREATE TABLE \`turnos\` (
     return [];
   }, [activeDbTable, usuarios, repartidor, turnos, entregas, walletSaldo, adminSaldo, transacciones, dbSearchTerm]);
 
+
+  // Production vs Dev backport routing separation
+  const isDevRoute = window.location.pathname.startsWith('/dev') || window.location.pathname.startsWith('/admin/dev');
+
+  if (!isDevRoute) {
+    return (
+      <ProductionApp
+        turnos={turnos}
+        setTurnos={setTurnos}
+        entregas={entregas}
+        setEntregas={setEntregas}
+        logEvent={logEvent}
+        triggerNotification={triggerNotification}
+        weatherCondition={weatherCondition}
+        setWeatherCondition={setWeatherCondition}
+        temperature={temperature}
+        setTemperature={setTemperature}
+        multiplier={multiplier}
+        setMultiplier={setMultiplier}
+        handleWeatherChange={handleWeatherChange}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#FFFFFF] font-sans flex flex-col selection:bg-blue-brand/30 selection:text-white-brand relative overflow-hidden">
