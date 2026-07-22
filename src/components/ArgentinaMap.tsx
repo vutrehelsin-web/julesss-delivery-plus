@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MapPin, Navigation, Map, CloudRain, Sun, Wind, Flame, Building2, Package, Bike, TreePine, Utensils, Hospital, ShoppingBag, Landmark } from 'lucide-react';
+import { MapPin, Bike, TreePine, Utensils, Hospital, ShoppingBag, Landmark, Sun, Moon, Sparkles } from 'lucide-react';
 
 interface MarkerProp {
   id: string;
@@ -26,7 +26,7 @@ const createCustomIcon = (iconEle: React.ReactElement, colorClass: string, label
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', borderRadius: '999px', padding: '4px', border: '1px solid rgba(75,85,99,0.5)', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
         {React.cloneElement(iconEle as React.ReactElement<{ className: string }>, { className: `w-3 h-3 ${colorClass}` })}
       </div>
-      <span className={`text-[11px] font-medium leading-none ${colorClass}`} style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.9)' }}>
+      <span className={`text-[11px] font-bold leading-none ${colorClass}`} style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.9)' }}>
         {label}
       </span>
     </div>
@@ -61,9 +61,30 @@ export const ArgentinaMap: React.FC<ArgentinaMapProps> = ({
   userCoords,
   markers
 }) => {
+  // Theme state: 'day' | 'night' | 'auto'
+  const [mapTheme, setMapTheme] = useState<'day' | 'night' | 'auto'>('night');
+  const [resolvedTheme, setResolvedTheme] = useState<'day' | 'night'>('night');
+
+  useEffect(() => {
+    if (mapTheme === 'auto') {
+      const hours = new Date().getHours();
+      // Night between 19:00 and 7:00
+      const isNight = hours >= 19 || hours < 7;
+      setResolvedTheme(isNight ? 'night' : 'day');
+    } else {
+      setResolvedTheme(mapTheme);
+    }
+  }, [mapTheme]);
+
+  // Leaflet TileLayer URL mapping
+  const tileUrl = resolvedTheme === 'day'
+    ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+
   return (
     <div className="flex-1 flex flex-col relative rounded-[2rem] overflow-hidden border border-gray-800/80 min-h-[400px] shadow-2xl w-full h-full">
-      {/* HUD OVERLAYS */}
+      
+      {/* HUD OVERLAYS: Top Left Connection status */}
       <div className="absolute top-5 left-5 z-[1000] flex items-center bg-[#07090C]/95 px-4 py-2.5 rounded-xl border border-gray-800/60 shadow-xl gap-3">
         <div className="relative flex h-2.5 w-2.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
@@ -75,9 +96,40 @@ export const ArgentinaMap: React.FC<ArgentinaMapProps> = ({
         </div>
       </div>
 
+      {/* HUD OVERLAYS: Top Right Theme Switcher */}
+      <div className="absolute top-5 right-5 z-[1000] flex bg-[#07090C]/95 p-1 rounded-xl border border-gray-800/60 shadow-xl gap-1">
+        <button
+          onClick={() => setMapTheme('day')}
+          className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+            mapTheme === 'day' ? 'bg-blue-brand text-white' : 'text-gray-500 hover:text-white'
+          }`}
+          title="Modo Día (Day Mode)"
+        >
+          <Sun className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => setMapTheme('night')}
+          className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+            mapTheme === 'night' ? 'bg-blue-brand text-white' : 'text-gray-500 hover:text-white'
+          }`}
+          title="Modo Noche (Night Mode)"
+        >
+          <Moon className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => setMapTheme('auto')}
+          className={`p-1.5 rounded-lg text-[9px] font-extrabold px-2 transition-all uppercase ${
+            mapTheme === 'auto' ? 'bg-blue-brand text-white' : 'text-gray-500 hover:text-white'
+          }`}
+          title="Modo Automático (Auto Mode)"
+        >
+          Auto
+        </button>
+      </div>
+
       <div className="absolute bottom-5 right-5 z-[1000] flex items-center bg-black/95 px-5 py-3 rounded-full border border-gray-800/80 shadow-xl gap-2.5">
         <Bike className="w-4 h-4 text-cyan-400" />
-        <span className="text-white text-[11px] font-black tracking-widest uppercase font-display">Simulador</span>
+        <span className="text-white text-[11px] font-black tracking-widest uppercase font-display">Satelital</span>
       </div>
 
       {/* LEAFLET MAP */}
@@ -90,9 +142,7 @@ export const ArgentinaMap: React.FC<ArgentinaMapProps> = ({
           zoomControl={false}
           attributionControl={false}
         >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          />
+          <TileLayer url={tileUrl} />
           
           {mapLocations.map((loc, i) => (
             <Marker 
@@ -122,4 +172,3 @@ export const ArgentinaMap: React.FC<ArgentinaMapProps> = ({
     </div>
   );
 };
-
