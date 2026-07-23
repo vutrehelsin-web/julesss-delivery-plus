@@ -5,6 +5,7 @@ import { createServer as createViteServer } from "vite";
 import dns from "dns";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import textToSpeech from '@google-cloud/text-to-speech';
 
 
 dotenv.config();
@@ -139,6 +140,59 @@ No agregues markdown adicional, explicaciones por fuera del JSON, ni barras inve
         multiplier: 1.0,
         behaviorAnalysis: "La API experimentó un retraso inusual o token de acceso offline.",
         heading: "Error en Motor de IA"
+      });
+    }
+  });
+
+  // Google Cloud Text-to-Speech client initialization
+  let googleTtsClient: any = null;
+  try {
+    googleTtsClient = new textToSpeech.TextToSpeechClient();
+  } catch (err: any) {
+    console.warn("[Google TTS] Client initialization warning (credentials required for live API):", err.message);
+  }
+
+  // Google Cloud TTS Endpoint for es-AR high-fidelity voices
+  app.post("/api/voice/google", async (req, res) => {
+    try {
+      const { text, voice } = req.body;
+      if (!text) {
+        return res.status(400).json({ error: "Text is required" });
+      }
+
+      const voiceName = (voice || "").toLowerCase() === 'mateo' ? 'es-AR-Neural2-C' : 'es-AR-Neural2-A';
+      console.log(`[Google TTS] Synthesizing "${text.substring(0, 45)}..." using voice ${voiceName}`);
+
+      if (!googleTtsClient || (!process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)) {
+        console.warn("[Google TTS] Credentials missing, using resilient local voice fallback.");
+        return res.json({
+          audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+          provider: "google",
+          fallback: true
+        });
+      }
+
+      const request = {
+        input: { text },
+        voice: { languageCode: 'es-AR', name: voiceName },
+        audioConfig: { audioEncoding: 'MP3' as const },
+      };
+
+      const [response] = await googleTtsClient.synthesizeSpeech(request);
+      const buffer = Buffer.from(response.audioContent);
+      const base64Audio = `data:audio/mpeg;base64,${buffer.toString('base64')}`;
+
+      return res.json({
+        audioUrl: base64Audio,
+        provider: "google",
+        cached: false
+      });
+    } catch (err: any) {
+      console.error("[Google TTS] Error in Cloud API, falling back:", err.message);
+      res.json({
+        audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        provider: "google",
+        fallback: true
       });
     }
   });

@@ -8,7 +8,7 @@ export interface VoiceProviderOptions {
 
 export class VoiceProvider {
   static async speak(options: VoiceProviderOptions): Promise<void> {
-    const { text, engine = 'kokoro', voiceProfile = 'valentina' } = options;
+    const { text, engine = 'google', voiceProfile = 'valentina' } = options;
     console.log(`[VoiceProvider] Speaking via ${engine} [Profile: ${voiceProfile}]: "${text.substring(0, 50)}..."`);
 
     const cleanText = text
@@ -20,6 +20,31 @@ export class VoiceProvider {
       .trim();
 
     if (!cleanText) return;
+
+    // Google Cloud Text-to-Speech Integration (via our backend POST /api/voice/google)
+    if (engine === 'google') {
+      try {
+        const response = await fetch('/api/voice/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: cleanText,
+            voice: voiceProfile,
+            language: 'es-AR'
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const audio = new Audio(data.audioUrl);
+          await audio.play();
+          return;
+        }
+      } catch (err) {
+        console.warn("[VoiceProvider] Google Cloud TTS failed, falling back to local speech...", err);
+      }
+    }
 
     // Chatterbox TTS implementation using Hugging Face (via our backend POST /api/voice/chatterbox)
     if (engine === 'chatterbox') {
@@ -42,7 +67,7 @@ export class VoiceProvider {
           return;
         }
       } catch (err) {
-        console.warn("[VoiceProvider] Chatterbox failed, falling back to Kokoro...", err);
+        console.warn("[VoiceProvider] Chatterbox failed, falling back to local speech...", err);
       }
     }
 
@@ -66,7 +91,7 @@ export class VoiceProvider {
           return;
         }
       } catch (err) {
-        console.warn("[VoiceProvider] ElevenLabs failed, falling back to Kokoro...", err);
+        console.warn("[VoiceProvider] ElevenLabs failed, falling back to local speech...", err);
       }
     }
 
