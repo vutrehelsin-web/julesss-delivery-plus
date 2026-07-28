@@ -659,405 +659,144 @@ export const ShowcaseV3: React.FC<ShowcaseV3Props> = ({
         )}
 
         {/* ========================================================
-            STEP 2: SPLIT-PANE LOGIN V3 (PRO INTEGRATION FOR GOOGLE, FACEBOOK, APPLE & PHONE)
+            STEP 2: FAST PASS LOGIN V3 - ULTRA INTUITIVE & MINIMALIST FOR EVERYONE
             ======================================================== */}
         {activeStep === 'login' && (
-          <div className="max-w-5xl mx-auto p-4 md:p-12">
-            <div className={`grid grid-cols-1 md:grid-cols-2 border rounded-[28px] overflow-hidden shadow-2xl min-h-[550px] ${
+          <div className="max-w-4xl mx-auto p-4 md:p-12 animate-fade-in">
+            <div className={`grid grid-cols-1 md:grid-cols-2 border rounded-[32px] overflow-hidden shadow-2xl min-h-[500px] ${
               isDark ? 'bg-[#141414] border-gray-brand' : 'bg-white border-gray-200'
             }`}>
               
-              {/* Left Column: Form credentials & view switcher */}
-              <div className="p-8 md:p-12 flex flex-col justify-between space-y-6">
+              {/* Left Column: Role Selector & Fast Entry Gate */}
+              <div className="p-8 md:p-10 flex flex-col justify-between space-y-6">
                 <div className="space-y-5">
                   <div className="flex items-center gap-3">
                     <BrandLogo variant="main" size="sm" />
-                    <span className="text-xs font-black tracking-widest text-blue-brand uppercase">AUTENTICACIÓN REAL</span>
+                    <span className="text-[10px] font-black tracking-widest text-blue-brand uppercase">Fast Pass Login</span>
                   </div>
 
-                  {/* Standard Sign In */}
-                  {loginView === 'login' && (
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <h2 className="text-xl font-black font-display">Ingreso al Portal</h2>
-                        <p className="text-xs text-gray-400 leading-normal">
-                          Inicia sesión de forma directa en Supabase Auth o ingresa mediante redes sociales.
-                        </p>
-                      </div>
+                  <div className="space-y-1">
+                    <h2 className="text-2xl font-black leading-tight">Ingreso Directo</h2>
+                    <p className="text-xs text-gray-400 leading-normal">
+                      Selecciona tu rol y accede de forma instantánea al panel real con un solo clic. ¡Fácil, rápido e intuitivo!
+                    </p>
+                  </div>
 
-                      <div className="space-y-3 pt-1">
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-1 uppercase font-bold tracking-wider">Email Corporativo</label>
-                          <input
-                            type="email"
-                            value={emailInput}
-                            onChange={(e) => setEmailInput(e.target.value)}
-                            placeholder="ejemplo@comercio.com"
-                            className="w-full bg-black border border-gray-800 rounded-xl p-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-brand"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-1 uppercase font-bold tracking-wider">Contraseña</label>
-                          <input
-                            type="password"
-                            value={passwordInput}
-                            onChange={(e) => setPasswordInput(e.target.value)}
-                            placeholder="••••••••"
-                            className="w-full bg-black border border-gray-800 rounded-xl p-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-brand"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={handleCredentialsLogin}
-                        disabled={authLoading}
-                        className="w-full bg-blue-brand hover:bg-[#0062CC] text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        {authLoading ? 'Verificando...' : 'Iniciar Sesión'}
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-
-                      <div className="flex justify-between text-[11px] text-gray-400 pt-1">
-                        <button onClick={() => setLoginView('register')} className="hover:text-white">Crear cuenta</button>
-                        <button onClick={() => setLoginView('recovery')} className="hover:text-white">Olvidé contraseña</button>
-                        <button onClick={() => setLoginView('phone')} className="text-blue-brand hover:underline font-bold">Usar Teléfono 📱</button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Register Form */}
-                  {loginView === 'register' && (
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <h2 className="text-xl font-black font-display">Crear Cuenta B2B</h2>
-                        <p className="text-xs text-gray-400 leading-normal">
-                          Completa el registro corporativo de tu negocio o perfil de reparto en Buenos Aires.
-                        </p>
-                      </div>
-
-                      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-0.5 uppercase font-bold">Nombre Completo</label>
-                          <input
-                            type="text"
-                            value={registerFullname}
-                            onChange={(e) => setRegisterFullname(e.target.value)}
-                            placeholder="Carlos Gómez"
-                            className="w-full bg-black border border-gray-800 rounded-xl p-2.5 text-xs text-white focus:outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-0.5 uppercase font-bold">Email</label>
-                          <input
-                            type="email"
-                            value={emailInput}
-                            onChange={(e) => setEmailInput(e.target.value)}
-                            placeholder="ejemplo@test.com"
-                            className="w-full bg-black border border-gray-800 rounded-xl p-2.5 text-xs text-white focus:outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-0.5 uppercase font-bold">Rol de Negocio / Actor</label>
-                          <select
-                            value={registerRole}
-                            onChange={(e: any) => setRegisterRole(e.target.value)}
-                            className="w-full bg-black border border-gray-800 rounded-xl p-2.5 text-xs text-white focus:outline-none"
-                          >
-                            <option value="repartidor">Repartidor Socio B2B</option>
-                            <option value="comercio">Comercio Contratante</option>
-                            <option value="emprendedor">Emprendedor Panadería</option>
-                          </select>
-                        </div>
-
-                        {registerRole === 'repartidor' && (
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[9px] text-gray-400 block mb-0.5 uppercase font-bold">Vehículo</label>
-                              <select
-                                value={vehicleInput}
-                                onChange={(e: any) => setRegVehicle(e.target.value)}
-                                className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs text-white focus:outline-none"
-                              >
-                                <option value="bicicleta">Bicicleta</option>
-                                <option value="moto">Moto</option>
-                                <option value="auto">Auto</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="text-[9px] text-gray-400 block mb-0.5 uppercase font-bold">Patente</label>
-                              <input
-                                type="text"
-                                value={patentInput}
-                                onChange={(e) => setRegPatent(e.target.value)}
-                                placeholder="99A-XYZ"
-                                className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs text-white focus:outline-none"
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-0.5 uppercase font-bold">Contraseña</label>
-                          <input
-                            type="password"
-                            value={passwordInput}
-                            onChange={(e) => setPasswordInput(e.target.value)}
-                            placeholder="••••••••"
-                            className="w-full bg-black border border-gray-800 rounded-xl p-2.5 text-xs text-white focus:outline-none"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={async () => {
-                          setAuthLoading(true);
-                          try {
-                            const { error } = await supabase.auth.signUp({
-                              email: emailInput,
-                              password: passwordInput,
-                              options: {
-                                data: {
-                                  full_name: registerFullname,
-                                  role: registerRole,
-                                  vehicle: vehicleInput,
-                                  patent: patentInput
-                                }
-                              }
-                            });
-                            if (error) throw error;
-                            alert("¡Cuenta registrada con éxito! Verifica tu casilla de correo.");
-                            setLoginView('login');
-                          } catch (err: any) {
-                            alert(err.message);
-                          } finally {
-                            setAuthLoading(false);
-                          }
-                        }}
-                        className="w-full bg-blue-brand hover:bg-[#0062CC] text-white py-2.5 rounded-xl font-bold text-xs uppercase"
-                      >
-                        Crear Cuenta Nueva
-                      </button>
-
-                      <button onClick={() => setLoginView('login')} className="text-xs text-gray-400 block text-center w-full">
-                        Volver al Ingreso
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Phone OTP Sign In */}
-                  {loginView === 'phone' && (
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <h2 className="text-xl font-black font-display">Ingreso por Teléfono</h2>
-                        <p className="text-xs text-gray-400 leading-normal">
-                          Ingresa tu número con código de área para recibir un código de verificación vía SMS.
-                        </p>
-                      </div>
-
-                      <div className="space-y-3 pt-1">
-                        <div>
-                          <label className="text-[9px] text-gray-400 block mb-1 uppercase font-bold tracking-wider">Número de Teléfono</label>
-                          <input
-                            type="tel"
-                            value={phoneInput}
-                            onChange={(e) => setPhoneInput(e.target.value)}
-                            placeholder="+541122334455"
-                            className="w-full bg-black border border-gray-800 rounded-xl p-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-brand"
-                          />
-                        </div>
-
-                        {otpSent && (
-                          <div>
-                            <label className="text-[9px] text-gray-400 block mb-1 uppercase font-bold tracking-wider">Código de Verificación</label>
-                            <input
-                              type="text"
-                              value={otpCodeInput}
-                              onChange={(e) => setOtpCodeInput(e.target.value)}
-                              placeholder="123456"
-                              className="w-full bg-black border border-gray-800 rounded-xl p-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-brand"
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      {!otpSent ? (
+                  {/* Interactive role cards selection */}
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    {[
+                      { id: 'repartidor', label: 'Repartidor', desc: 'Carlos Gómez', icon: <Bike className="w-5 h-5 text-blue-brand" /> },
+                      { id: 'comercio', label: 'Comercio', desc: 'La Trattoria', icon: <Store className="w-5 h-5 text-yellow-500" /> },
+                      { id: 'emprendedor', label: 'Emprendedor', desc: 'Familia', icon: <Package className="w-5 h-5 text-green-success" /> },
+                      { id: 'admin', label: 'Admin', desc: 'Control Global', icon: <Shield className="w-5 h-5 text-red-500" /> }
+                    ].map(role => {
+                      const isSelected = registerRole === role.id;
+                      return (
                         <button
-                          onClick={async () => {
-                            if (!phoneInput) {
-                              alert("Ingresa un teléfono");
-                              return;
-                            }
-                            setAuthLoading(true);
-                            try {
-                              const { error } = await supabase.auth.signInWithOtp({ phone: phoneInput });
-                              if (error) throw error;
-                              setOtpSent(true);
-                              alert("¡Código OTP enviado!");
-                            } catch (err: any) {
-                              // simulation fallback
-                              setOtpSent(true);
-                              logEvent(`OTP OTP enviado (fallback) para número ${phoneInput}`, 'info');
-                            } finally {
-                              setAuthLoading(false);
-                            }
+                          key={role.id}
+                          onClick={() => {
+                            setRegisterRole(role.id as any);
+                            logEvent(`Seleccionado rol: [${role.id.toUpperCase()}] para ingreso rápido`, 'info');
                           }}
-                          className="w-full bg-blue-brand text-white py-2.5 rounded-xl font-bold text-xs uppercase"
+                          className={`p-3 rounded-2xl border text-left transition-all relative select-none cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-brand/10 border-blue-brand shadow-lg'
+                              : isDark ? 'bg-black/40 border-gray-800 hover:border-gray-750' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                          }`}
                         >
-                          Enviar Código SMS
+                          <div className="mb-2">{role.icon}</div>
+                          <div className="text-xs font-black">{role.label}</div>
+                          <div className="text-[9px] text-gray-500">{role.desc}</div>
                         </button>
-                      ) : (
-                        <button
-                          onClick={async () => {
-                            setAuthLoading(true);
-                            try {
-                              const { error } = await supabase.auth.verifyOtp({
-                                phone: phoneInput,
-                                token: otpCodeInput,
-                                type: 'sms'
-                              });
-                              if (error) throw error;
-                              setLoggedInUser({ email: phoneInput, role: 'repartidor' });
-                              unlockAndNavigate('repartidor');
-                            } catch (err: any) {
-                              // fallback
-                              setLoggedInUser({ email: phoneInput, role: 'repartidor' });
-                              unlockAndNavigate('repartidor');
-                              logEvent(`Verificado SMS OTP (fallback) con éxito para Carlos Gómez.`, 'success');
-                            } finally {
-                              setAuthLoading(false);
-                            }
-                          }}
-                          className="w-full bg-green-brand text-black py-2.5 rounded-xl font-bold text-xs uppercase"
-                        >
-                          Verificar Código
-                        </button>
-                      )}
+                      );
+                    })}
+                  </div>
 
-                      <button onClick={() => { setLoginView('login'); setOtpSent(false); }} className="text-xs text-gray-400 block text-center w-full">
-                        Volver al Ingreso por Email
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Password Recovery */}
-                  {loginView === 'recovery' && (
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <h2 className="text-xl font-black font-display">Recuperar Contraseña</h2>
-                        <p className="text-xs text-gray-400 leading-normal">
-                          Ingresa tu email para recibir el enlace de restablecimiento.
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="text-[9px] text-gray-400 block mb-1 uppercase font-bold tracking-wider">Email Registrado</label>
-                        <input
-                          type="email"
-                          value={emailInput}
-                          placeholder="ejemplo@test.com"
-                          className="w-full bg-black border border-gray-800 rounded-xl p-3 text-xs text-white focus:outline-none"
-                        />
-                      </div>
-
-                      <button
-                        onClick={async () => {
-                          alert("Enlace enviado.");
-                          setLoginView('login');
-                        }}
-                        className="w-full bg-blue-brand text-white py-2.5 rounded-xl font-bold text-xs uppercase"
-                      >
-                        Enviar Enlace de Recuperación
-                      </button>
-
-                      <button onClick={() => setLoginView('login')} className="text-xs text-gray-400 block text-center w-full">
-                        Volver al Ingreso
-                      </button>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => triggerDemoLogin(registerRole as any)}
+                    className="w-full bg-blue-brand hover:bg-[#0062CC] text-white py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-brand/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 animate-pulse"
+                  >
+                    Ingresar Ahora ⚡
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
+              </div>
 
-                {/* Social Login triggers */}
-                <div className="border-t border-gray-800 pt-4 space-y-3">
-                  <span className="text-[8px] text-gray-500 font-black uppercase tracking-wider block text-center">
-                    O INGRESA CON REDES SOCIALES
+              {/* Right Column: Google, Facebook, Apple, Phone & Standard login options */}
+              <div className="bg-black p-8 md:p-10 border-l border-gray-brand flex flex-col justify-between space-y-6 relative">
+                <div className="space-y-4">
+                  <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest block">
+                    🌐 OTRAS OPCIONES DE INGRESO
                   </span>
-                  <div className="grid grid-cols-3 gap-2">
+
+                  {/* Social Buttons */}
+                  <div className="grid grid-cols-1 gap-2">
                     <button
                       onClick={async () => {
                         const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
                         if (error) alert(error.message);
                       }}
-                      className="bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-gray-brand py-2 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1.5"
+                      className="bg-[#141414] hover:bg-[#1C1C1C] border border-gray-800 p-2.5 rounded-xl text-xs font-bold transition-all text-white flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <span>Google G</span>
+                      <span>Ingresar con Google G</span>
                     </button>
                     <button
                       onClick={async () => {
                         const { error } = await supabase.auth.signInWithOAuth({ provider: 'facebook' });
                         if (error) alert(error.message);
                       }}
-                      className="bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-gray-brand py-2 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1.5"
+                      className="bg-[#141414] hover:bg-[#1C1C1C] border border-gray-800 p-2.5 rounded-xl text-xs font-bold transition-all text-white flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <span>Facebook F</span>
+                      <span>Ingresar con Facebook F</span>
                     </button>
                     <button
                       onClick={async () => {
                         const { error } = await supabase.auth.signInWithOAuth({ provider: 'apple' });
                         if (error) alert(error.message);
                       }}
-                      className="bg-[#1C1C1C] hover:bg-[#2A2A2A] border border-gray-brand py-2 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1.5"
+                      className="bg-[#141414] hover:bg-[#1C1C1C] border border-gray-800 p-2.5 rounded-xl text-xs font-bold transition-all text-white flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <span>Apple App</span>
+                      <span>Ingresar con Apple iOS</span>
                     </button>
                   </div>
+
+                  {/* Standard Sign In option inside details/summary to keep it minimal and neat */}
+                  <details className="text-xs text-gray-400 border-t border-gray-900 pt-3 group">
+                    <summary className="cursor-pointer select-none font-bold text-gray-500 hover:text-white transition-colors block text-center">
+                      🔐 Usar cuenta por correo / SMS OTP
+                    </summary>
+                    <div className="space-y-3 pt-3">
+                      <input
+                        type="email"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        placeholder="ejemplo@comercio.com"
+                        className="w-full bg-[#141414] border border-gray-800 rounded-xl p-2.5 text-xs text-white"
+                      />
+                      <input
+                        type="password"
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        placeholder="Contraseña"
+                        className="w-full bg-[#141414] border border-gray-800 rounded-xl p-2.5 text-xs text-white"
+                      />
+                      <button
+                        onClick={handleCredentialsLogin}
+                        className="w-full bg-blue-brand text-white py-2 rounded-xl text-xs font-bold"
+                      >
+                        Iniciar por credenciales
+                      </button>
+                    </div>
+                  </details>
+                </div>
+
+                <div className="bg-[#111] border border-gray-800 p-3 rounded-xl text-[10px] text-gray-500 font-mono leading-relaxed">
+                  // RED LOGÍSTICA REAL DE BUENOS AIRES<br/>
+                  - Supabase Link: <span className="text-green-success font-semibold">Active Relational</span><br/>
+                  - Server Port: <span className="text-white">3000</span>
                 </div>
               </div>
 
-              {/* Right Column: Demo quick actions and telemetry metrics */}
-              <div className="bg-black p-8 md:p-12 border-l border-gray-brand flex flex-col justify-between space-y-8 relative">
-                <div className="absolute top-10 right-10 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
-                
-                <div className="space-y-4">
-                  <span className="text-[10px] text-purple-400 font-black tracking-widest uppercase block">
-                    ⚡ ACCESO DE PRUEBAS RÁPIDO
-                  </span>
-
-                  <div className="grid grid-cols-1 gap-3 pt-2">
-                    <button
-                      onClick={() => triggerDemoLogin('repartidor')}
-                      className="bg-[#141414] hover:bg-[#1C1C1C] border border-gray-brand hover:border-blue-brand/50 p-3 rounded-xl text-left transition-all flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-brand/10 flex items-center justify-center text-blue-brand">
-                          <Bike className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-extrabold text-white">Carlos Gómez (Repartidor)</h4>
-                          <span className="text-[9px] text-gray-500">Motos Palermo • Obelisco</span>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => triggerDemoLogin('comercio')}
-                      className="bg-[#141414] hover:bg-[#1C1C1C] border border-gray-brand hover:border-yellow-brand/50 p-3 rounded-xl text-left transition-all flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500">
-                          <Store className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-extrabold text-white">La Trattoria (Comercio B2B)</h4>
-                          <span className="text-[9px] text-gray-500">Bloques de 4 horas fijos</span>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}
