@@ -1,4 +1,4 @@
-import { textModel } from '../config/gemini';
+import { getTextModel } from '../config/gemini';
 import { StoryRequest, StoryResponse } from '../types/index';
 import { v4 as uuidv4 } from 'uuid';
 import { saveToDatabase } from '../config/supabase';
@@ -26,6 +26,7 @@ export async function generateStory(request: StoryRequest): Promise<StoryRespons
   systemPrompt += `Genera un título creativo y luego la historia. Formato:\nTÍTULO: [título]\n\nHISTORIA: [contenido]`;
 
   try {
+    const textModel = getTextModel();
     const result = await textModel.generateContent(systemPrompt);
     const response = await result.response;
     const text = response.text();
